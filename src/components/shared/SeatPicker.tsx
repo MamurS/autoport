@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { User } from 'lucide-react'
 
 interface SeatPickerProps {
   totalSeats: number
@@ -38,213 +37,183 @@ export function SeatPicker({
     return 'available'
   }
 
-  const frontRow = [0, 1]
   const backRow: number[] = []
-  for (let i = 2; i < totalSeats + 1; i++) {
-    backRow.push(i)
-  }
+  for (let i = 2; i < totalSeats + 1; i++) backRow.push(i)
 
-  const renderSeat = (index: number, position: 'driver' | 'front' | 'back') => {
+  const seatButton = (index: number) => {
     const status = getSeatStatus(index)
     const isClickable = status === 'available' || status === 'selected'
 
-    // Seat colors
-    const seatFill = {
-      driver: '#94a3b8',
-      booked: '#fca5a5',
-      available: '#e2e8f0',
-      selected: '#3b82f6',
-    }[status]
-
-    const seatStroke = {
-      driver: '#64748b',
-      booked: '#ef4444',
-      available: '#94a3b8',
-      selected: '#1d4ed8',
-    }[status]
-
-    const textColor = status === 'selected' ? 'white' : status === 'booked' ? '#dc2626' : '#475569'
+    const styles: Record<string, string> = {
+      driver: 'bg-black/30 border-white/20 text-white/60 cursor-not-allowed',
+      booked: 'bg-red-500/70 border-red-400 text-white cursor-not-allowed shadow-lg shadow-red-500/20',
+      available: 'bg-white/20 border-white/40 text-white hover:bg-green-400/50 hover:border-green-300 hover:shadow-lg hover:shadow-green-400/20 cursor-pointer backdrop-blur-sm',
+      selected: 'bg-blue-500/80 border-blue-300 text-white cursor-pointer shadow-lg shadow-blue-500/30 ring-2 ring-blue-300/50',
+    }
 
     const label = status === 'driver'
-      ? (isUz ? 'H' : 'В')
-      : status === 'booked'
-        ? (isUz ? 'B' : 'X')
-        : status === 'selected'
-          ? '✓'
-          : `${index}`
-
-    const sublabel = status === 'driver'
       ? (isUz ? 'Haydovchi' : 'Водитель')
       : status === 'booked'
         ? (isUz ? 'Band' : 'Занято')
         : status === 'selected'
-          ? (isUz ? 'Siz' : 'Вы')
+          ? (isUz ? 'Tanlandi' : 'Выбрано')
           : (isUz ? "Bo'sh" : 'Свободно')
 
+    const icon = status === 'driver' ? '🚗' : status === 'booked' ? '👤' : status === 'selected' ? '✓' : ''
+
     return (
-      <g
+      <button
         key={index}
-        onClick={() => isClickable && toggleSeat(index)}
-        style={{ cursor: isClickable ? 'pointer' : 'default' }}
+        type="button"
+        disabled={!isClickable}
+        onClick={() => toggleSeat(index)}
+        className={`
+          w-[72px] h-[80px] sm:w-[80px] sm:h-[88px]
+          rounded-xl border-2
+          flex flex-col items-center justify-center gap-1
+          transition-all duration-200
+          ${styles[status]}
+        `}
       >
-        {/* Seat back (headrest) */}
-        <rect
-          x={0} y={0} width={56} height={12} rx={6}
-          fill={seatFill} stroke={seatStroke} strokeWidth={1.5}
-          opacity={0.7}
-        />
-        {/* Seat cushion */}
-        <rect
-          x={2} y={14} width={52} height={44} rx={8}
-          fill={seatFill} stroke={seatStroke} strokeWidth={1.5}
-        />
-        {/* Armrests */}
-        <rect x={-3} y={18} width={6} height={30} rx={3} fill={seatFill} opacity={0.5} />
-        <rect x={53} y={18} width={6} height={30} rx={3} fill={seatFill} opacity={0.5} />
-        {/* Label */}
-        <text
-          x={28} y={34}
-          textAnchor="middle"
-          fill={textColor}
-          fontSize={status === 'selected' ? 18 : 16}
-          fontWeight="bold"
-          fontFamily="system-ui"
-        >
-          {label}
-        </text>
-        <text
-          x={28} y={50}
-          textAnchor="middle"
-          fill={textColor}
-          fontSize={8}
-          fontFamily="system-ui"
-          opacity={0.8}
-        >
-          {sublabel}
-        </text>
-        {/* Hover highlight for available */}
-        {status === 'available' && (
-          <rect
-            x={2} y={14} width={52} height={44} rx={8}
-            fill="transparent"
-            className="hover:fill-blue-100"
-            style={{ transition: 'fill 0.15s' }}
-          />
-        )}
-      </g>
+        <span className="text-lg leading-none">{icon || `${index}`}</span>
+        <span className="text-[9px] sm:text-[10px] font-medium leading-none opacity-90">{label}</span>
+      </button>
     )
   }
 
-  // Seat positions within SVG
-  const seatW = 56
-  const gap = 16
-  const carW = 260
-  const carH = 320
-
-  // Front row: 2 seats
-  const frontX = [
-    (carW / 2) - seatW - (gap / 2), // left (driver)
-    (carW / 2) + (gap / 2),          // right (passenger)
-  ]
-  const frontY = 65
-
-  // Back row: centered
-  const backCount = backRow.length
-  const totalBackW = backCount * seatW + (backCount - 1) * (gap / 2)
-  const backStartX = (carW - totalBackW) / 2
-  const backY = 190
-
   return (
     <div className="space-y-3">
-      <div className="flex justify-center">
-        <svg
-          viewBox={`0 0 ${carW} ${carH}`}
-          width={carW}
-          className="max-w-full"
-          style={{ height: 'auto' }}
-        >
-          {/* Car body outline */}
-          <rect
-            x={10} y={8} width={carW - 20} height={carH - 16} rx={40}
-            fill="#f8fafc" stroke="#cbd5e1" strokeWidth={2}
+      {/* Car interior container */}
+      <div
+        className="relative rounded-2xl overflow-hidden mx-auto"
+        style={{
+          maxWidth: '340px',
+          background: `
+            radial-gradient(ellipse 120% 50% at 50% 15%, #2a2a2a 0%, transparent 70%),
+            radial-gradient(ellipse 100% 40% at 50% 90%, #1a1a1a 0%, transparent 60%),
+            linear-gradient(180deg, #3a3a3a 0%, #2c2c2c 20%, #252525 50%, #1e1e1e 80%, #181818 100%)
+          `,
+        }}
+      >
+        {/* Top: Dashboard area */}
+        <div className="relative pt-4 pb-2 px-4">
+          {/* Windshield reflection */}
+          <div
+            className="absolute top-0 left-0 right-0 h-12"
+            style={{
+              background: 'linear-gradient(180deg, rgba(135,206,250,0.15) 0%, transparent 100%)',
+              borderRadius: '16px 16px 0 0',
+            }}
           />
+          {/* Dashboard */}
+          <div className="relative mx-auto" style={{ maxWidth: '280px' }}>
+            <div
+              className="h-8 rounded-t-xl"
+              style={{
+                background: 'linear-gradient(180deg, #4a4a4a 0%, #3a3a3a 100%)',
+                boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.1)',
+              }}
+            >
+              {/* Dashboard details */}
+              <div className="flex items-center justify-between h-full px-4">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-gray-600 border border-gray-500" />
+                  <div className="w-3 h-3 rounded-full bg-gray-600 border border-gray-500" />
+                </div>
+                {/* Rearview mirror */}
+                <div className="w-8 h-3 rounded-full bg-gray-500 border border-gray-400" style={{ boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.2)' }} />
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-gray-600 border border-gray-500" />
+                  <div className="w-3 h-3 rounded-full bg-gray-600 border border-gray-500" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-          {/* Windshield */}
-          <path
-            d={`M ${carW / 2 - 60} 20 Q ${carW / 2} 0 ${carW / 2 + 60} 20`}
-            fill="none" stroke="#93c5fd" strokeWidth={3} strokeLinecap="round"
+        {/* Steering wheel + front seats row */}
+        <div className="relative px-4 pb-3">
+          <div className="flex items-center justify-center gap-4 sm:gap-6 relative">
+            {/* Steering wheel overlay on driver seat */}
+            <div className="relative">
+              {seatButton(0)}
+              {/* Steering wheel */}
+              <div className="absolute -top-2 left-1/2 -translate-x-1/2 pointer-events-none">
+                <svg width="40" height="40" viewBox="0 0 40 40">
+                  <circle cx="20" cy="20" r="16" fill="none" stroke="rgba(180,180,180,0.6)" strokeWidth="3" />
+                  <circle cx="20" cy="20" r="5" fill="rgba(120,120,120,0.5)" />
+                  <line x1="20" y1="4" x2="20" y2="12" stroke="rgba(180,180,180,0.5)" strokeWidth="2" />
+                  <line x1="6" y1="26" x2="13" y2="22" stroke="rgba(180,180,180,0.5)" strokeWidth="2" />
+                  <line x1="34" y1="26" x2="27" y2="22" stroke="rgba(180,180,180,0.5)" strokeWidth="2" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Center console */}
+            <div className="flex flex-col items-center gap-1 w-6">
+              <div className="w-4 h-4 rounded-full bg-gray-600 border border-gray-500" title="Gear shift" />
+              <div className="w-3 h-8 rounded-sm bg-gray-700" />
+            </div>
+
+            {/* Front passenger seat */}
+            {seatButton(1)}
+          </div>
+        </div>
+
+        {/* Texture divider (center console extension) */}
+        <div className="flex items-center justify-center py-1">
+          <div className="flex items-center gap-2">
+            <div className="w-20 h-px bg-gray-600" />
+            <div className="w-2 h-2 rounded-full bg-gray-600" />
+            <div className="w-20 h-px bg-gray-600" />
+          </div>
+        </div>
+
+        {/* Back seats row */}
+        <div className="px-4 pb-2">
+          <div className="flex items-center justify-center gap-2 sm:gap-3">
+            {backRow.map(i => seatButton(i))}
+          </div>
+        </div>
+
+        {/* Floor texture */}
+        <div className="h-6 relative">
+          <div
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.3) 100%)',
+            }}
           />
-          <rect
-            x={carW / 2 - 55} y={18} width={110} height={28} rx={10}
-            fill="#dbeafe" stroke="#93c5fd" strokeWidth={1.5} opacity={0.6}
-          />
+          {/* Floor mats hint */}
+          <div className="flex justify-center gap-16 pt-1">
+            <div className="w-10 h-3 rounded-sm bg-gray-800/50" />
+            <div className="w-10 h-3 rounded-sm bg-gray-800/50" />
+          </div>
+        </div>
 
-          {/* Rear window */}
-          <rect
-            x={carW / 2 - 50} y={carH - 40} width={100} height={22} rx={10}
-            fill="#dbeafe" stroke="#93c5fd" strokeWidth={1.5} opacity={0.6}
-          />
-
-          {/* Side mirrors */}
-          <ellipse cx={6} cy={55} rx={6} ry={10} fill="#cbd5e1" />
-          <ellipse cx={carW - 6} cy={55} rx={6} ry={10} fill="#cbd5e1" />
-
-          {/* Steering wheel (left side) */}
-          <g transform={`translate(${frontX[0] + 20}, ${frontY - 16})`}>
-            <circle cx={8} cy={8} r={10} fill="none" stroke="#64748b" strokeWidth={2.5} />
-            <circle cx={8} cy={8} r={3} fill="#64748b" />
-            <line x1={8} y1={-2} x2={8} y2={4} stroke="#64748b" strokeWidth={1.5} />
-            <line x1={1} y1={13} x2={5} y2={10} stroke="#64748b" strokeWidth={1.5} />
-            <line x1={15} y1={13} x2={11} y2={10} stroke="#64748b" strokeWidth={1.5} />
-          </g>
-
-          {/* Dashboard line */}
-          <line
-            x1={30} y1={55} x2={carW - 30} y2={55}
-            stroke="#e2e8f0" strokeWidth={2} strokeDasharray="4 3"
-          />
-          {/* Center console between rows */}
-          <rect
-            x={carW / 2 - 8} y={frontY + 60} width={16} height={backY - frontY - 60}
-            rx={4} fill="#e2e8f0"
-          />
-          {/* Gear shift */}
-          <circle cx={carW / 2} cy={frontY + 75} r={5} fill="#94a3b8" />
-
-          {/* Front row seats */}
-          {frontRow.map((seatIdx, i) => (
-            <g key={seatIdx} transform={`translate(${frontX[i]}, ${frontY})`}>
-              {renderSeat(seatIdx, i === 0 ? 'driver' : 'front')}
-            </g>
-          ))}
-
-          {/* Back row seats */}
-          {backRow.map((seatIdx, i) => (
-            <g key={seatIdx} transform={`translate(${backStartX + i * (seatW + gap / 2)}, ${backY})`}>
-              {renderSeat(seatIdx, 'back')}
-            </g>
-          ))}
-
-          {/* Wheels */}
-          <rect x={2} y={80} width={10} height={35} rx={5} fill="#374151" />
-          <rect x={carW - 12} y={80} width={10} height={35} rx={5} fill="#374151" />
-          <rect x={2} y={220} width={10} height={35} rx={5} fill="#374151" />
-          <rect x={carW - 12} y={220} width={10} height={35} rx={5} fill="#374151" />
-        </svg>
+        {/* Seat texture overlay (leather pattern) */}
+        <div
+          className="absolute inset-0 pointer-events-none rounded-2xl"
+          style={{
+            backgroundImage: `
+              repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.02) 3px, rgba(255,255,255,0.02) 4px)
+            `,
+          }}
+        />
       </div>
 
       {/* Legend */}
       <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-500">
         <span className="flex items-center gap-1.5">
-          <svg width="14" height="14"><rect width="14" height="14" rx="3" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="1" /></svg>
+          <div className="w-3.5 h-3.5 rounded border-2 border-gray-300 bg-gray-100" />
           {isUz ? "Bo'sh" : 'Свободно'}
         </span>
         <span className="flex items-center gap-1.5">
-          <svg width="14" height="14"><rect width="14" height="14" rx="3" fill="#3b82f6" stroke="#1d4ed8" strokeWidth="1" /></svg>
+          <div className="w-3.5 h-3.5 rounded bg-blue-500 border border-blue-400" />
           {isUz ? 'Tanlangan' : 'Выбрано'}
         </span>
         <span className="flex items-center gap-1.5">
-          <svg width="14" height="14"><rect width="14" height="14" rx="3" fill="#fca5a5" stroke="#ef4444" strokeWidth="1" /></svg>
+          <div className="w-3.5 h-3.5 rounded bg-red-400 border border-red-300" />
           {isUz ? 'Band' : 'Занято'}
         </span>
       </div>
