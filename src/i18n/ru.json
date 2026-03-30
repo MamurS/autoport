@@ -91,6 +91,8 @@
     "filterByTime": "Время",
     "noRidesFound": "Поездки не найдены",
     "tryDifferent": "Попробуйте изменить параметры поиска",
+    "listView": "Список",
+    "mapView": "Карта",
     "status": {
       "active": "Активна",
       "full": "Мест нет",

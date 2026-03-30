@@ -91,6 +91,8 @@
     "filterByTime": "Vaqt",
     "noRidesFound": "Sayohatlar topilmadi",
     "tryDifferent": "Qidiruv parametrlarini o'zgartirib ko'ring",
+    "listView": "Ro'yxat",
+    "mapView": "Xarita",
     "status": {
       "active": "Faol",
       "full": "O'rin yo'q",
