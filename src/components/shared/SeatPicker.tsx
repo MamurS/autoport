@@ -40,15 +40,26 @@ export function SeatPicker({
   const backRow: number[] = []
   for (let i = 2; i < totalSeats + 1; i++) backRow.push(i)
 
+  // Seat overlay positions (% based, for real photo background)
+  const seatPositions: Record<number, { top: string; left: string; width: string; height: string }> = {
+    0: { top: '18%', left: '5%',  width: '40%', height: '22%' },   // driver
+    1: { top: '18%', left: '55%', width: '40%', height: '22%' },   // front passenger
+    2: { top: '60%', left: '3%',  width: '30%', height: '18%' },   // back left
+    3: { top: '60%', left: '35%', width: '30%', height: '18%' },   // back center
+    4: { top: '60%', left: '67%', width: '30%', height: '18%' },   // back right
+  }
+
   const seatButton = (index: number) => {
     const status = getSeatStatus(index)
     const isClickable = status === 'available' || status === 'selected'
+    const pos = seatPositions[index]
+    if (!pos) return null
 
-    const styles: Record<string, string> = {
-      driver: 'bg-black/30 border-white/20 text-white/60 cursor-not-allowed',
-      booked: 'bg-red-500/70 border-red-400 text-white cursor-not-allowed shadow-lg shadow-red-500/20',
-      available: 'bg-white/20 border-white/40 text-white hover:bg-green-400/50 hover:border-green-300 hover:shadow-lg hover:shadow-green-400/20 cursor-pointer backdrop-blur-sm',
-      selected: 'bg-blue-500/80 border-blue-300 text-white cursor-pointer shadow-lg shadow-blue-500/30 ring-2 ring-blue-300/50',
+    const overlayStyles: Record<string, string> = {
+      driver: 'bg-black/50 border-white/20 backdrop-blur-[2px]',
+      booked: 'bg-red-600/50 border-red-300/70 backdrop-blur-[2px] shadow-[0_0_12px_rgba(239,68,68,0.3)]',
+      available: 'bg-white/15 border-2 border-dashed border-white/50 backdrop-blur-[1px] hover:bg-green-500/30 hover:border-green-300/70 hover:shadow-[0_0_20px_rgba(74,222,128,0.3)]',
+      selected: 'bg-blue-600/50 border-blue-300/80 backdrop-blur-[2px] shadow-[0_0_18px_rgba(59,130,246,0.4)]',
     }
 
     const label = status === 'driver'
@@ -56,10 +67,14 @@ export function SeatPicker({
       : status === 'booked'
         ? (isUz ? 'Band' : 'Занято')
         : status === 'selected'
-          ? (isUz ? 'Tanlandi' : 'Выбрано')
-          : (isUz ? "Bo'sh" : 'Свободно')
+          ? '✓'
+          : ''
 
-    const icon = status === 'driver' ? '🚗' : status === 'booked' ? '👤' : status === 'selected' ? '✓' : ''
+    const sublabel = status === 'available'
+      ? (isUz ? "Bo'sh" : 'Свободно')
+      : status === 'selected'
+        ? (isUz ? 'Tanlandi' : 'Выбрано')
+        : ''
 
     return (
       <button
@@ -68,144 +83,58 @@ export function SeatPicker({
         disabled={!isClickable}
         onClick={() => toggleSeat(index)}
         className={`
-          w-[72px] h-[80px] sm:w-[80px] sm:h-[88px]
-          rounded-xl border-2
-          flex flex-col items-center justify-center gap-1
-          transition-all duration-200
-          ${styles[status]}
+          absolute rounded-xl border-2 transition-all duration-200
+          flex flex-col items-center justify-center
+          ${overlayStyles[status]}
+          ${isClickable ? 'cursor-pointer' : 'cursor-default'}
         `}
+        style={{
+          top: pos.top,
+          left: pos.left,
+          width: pos.width,
+          height: pos.height,
+        }}
       >
-        <span className="text-lg leading-none">{icon || `${index}`}</span>
-        <span className="text-[9px] sm:text-[10px] font-medium leading-none opacity-90">{label}</span>
+        {label && (
+          <span className="text-white text-xs sm:text-sm font-bold leading-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+            {label}
+          </span>
+        )}
+        {sublabel && (
+          <span className="text-white/80 text-[9px] sm:text-[10px] font-medium leading-none mt-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
+            {sublabel}
+          </span>
+        )}
       </button>
     )
   }
 
+  const allSeats = [0, 1, ...backRow]
+
   return (
     <div className="space-y-3">
-      {/* Car interior container */}
+      {/* Car interior with real photo background */}
       <div
-        className="relative rounded-2xl overflow-hidden mx-auto"
+        className="relative mx-auto rounded-2xl overflow-hidden shadow-lg"
         style={{
-          maxWidth: '340px',
-          background: `
-            radial-gradient(ellipse 120% 50% at 50% 15%, #2a2a2a 0%, transparent 70%),
-            radial-gradient(ellipse 100% 40% at 50% 90%, #1a1a1a 0%, transparent 60%),
-            linear-gradient(180deg, #3a3a3a 0%, #2c2c2c 20%, #252525 50%, #1e1e1e 80%, #181818 100%)
-          `,
+          maxWidth: '360px',
+          aspectRatio: '3 / 4',
+          backgroundImage: 'url(https://images.unsplash.com/photo-1583267746897-2cf415887172?w=600&q=80)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
         }}
       >
-        {/* Top: Dashboard area */}
-        <div className="relative pt-4 pb-2 px-4">
-          {/* Windshield reflection */}
-          <div
-            className="absolute top-0 left-0 right-0 h-12"
-            style={{
-              background: 'linear-gradient(180deg, rgba(135,206,250,0.15) 0%, transparent 100%)',
-              borderRadius: '16px 16px 0 0',
-            }}
-          />
-          {/* Dashboard */}
-          <div className="relative mx-auto" style={{ maxWidth: '280px' }}>
-            <div
-              className="h-8 rounded-t-xl"
-              style={{
-                background: 'linear-gradient(180deg, #4a4a4a 0%, #3a3a3a 100%)',
-                boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.1)',
-              }}
-            >
-              {/* Dashboard details */}
-              <div className="flex items-center justify-between h-full px-4">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-gray-600 border border-gray-500" />
-                  <div className="w-3 h-3 rounded-full bg-gray-600 border border-gray-500" />
-                </div>
-                {/* Rearview mirror */}
-                <div className="w-8 h-3 rounded-full bg-gray-500 border border-gray-400" style={{ boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.2)' }} />
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-gray-600 border border-gray-500" />
-                  <div className="w-3 h-3 rounded-full bg-gray-600 border border-gray-500" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Dark overlay for contrast */}
+        <div className="absolute inset-0 bg-black/25" />
 
-        {/* Steering wheel + front seats row */}
-        <div className="relative px-4 pb-3">
-          <div className="flex items-center justify-center gap-4 sm:gap-6 relative">
-            {/* Steering wheel overlay on driver seat */}
-            <div className="relative">
-              {seatButton(0)}
-              {/* Steering wheel */}
-              <div className="absolute -top-2 left-1/2 -translate-x-1/2 pointer-events-none">
-                <svg width="40" height="40" viewBox="0 0 40 40">
-                  <circle cx="20" cy="20" r="16" fill="none" stroke="rgba(180,180,180,0.6)" strokeWidth="3" />
-                  <circle cx="20" cy="20" r="5" fill="rgba(120,120,120,0.5)" />
-                  <line x1="20" y1="4" x2="20" y2="12" stroke="rgba(180,180,180,0.5)" strokeWidth="2" />
-                  <line x1="6" y1="26" x2="13" y2="22" stroke="rgba(180,180,180,0.5)" strokeWidth="2" />
-                  <line x1="34" y1="26" x2="27" y2="22" stroke="rgba(180,180,180,0.5)" strokeWidth="2" />
-                </svg>
-              </div>
-            </div>
-
-            {/* Center console */}
-            <div className="flex flex-col items-center gap-1 w-6">
-              <div className="w-4 h-4 rounded-full bg-gray-600 border border-gray-500" title="Gear shift" />
-              <div className="w-3 h-8 rounded-sm bg-gray-700" />
-            </div>
-
-            {/* Front passenger seat */}
-            {seatButton(1)}
-          </div>
-        </div>
-
-        {/* Texture divider (center console extension) */}
-        <div className="flex items-center justify-center py-1">
-          <div className="flex items-center gap-2">
-            <div className="w-20 h-px bg-gray-600" />
-            <div className="w-2 h-2 rounded-full bg-gray-600" />
-            <div className="w-20 h-px bg-gray-600" />
-          </div>
-        </div>
-
-        {/* Back seats row */}
-        <div className="px-4 pb-2">
-          <div className="flex items-center justify-center gap-2 sm:gap-3">
-            {backRow.map(i => seatButton(i))}
-          </div>
-        </div>
-
-        {/* Floor texture */}
-        <div className="h-6 relative">
-          <div
-            className="absolute inset-0"
-            style={{
-              background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.3) 100%)',
-            }}
-          />
-          {/* Floor mats hint */}
-          <div className="flex justify-center gap-16 pt-1">
-            <div className="w-10 h-3 rounded-sm bg-gray-800/50" />
-            <div className="w-10 h-3 rounded-sm bg-gray-800/50" />
-          </div>
-        </div>
-
-        {/* Seat texture overlay (leather pattern) */}
-        <div
-          className="absolute inset-0 pointer-events-none rounded-2xl"
-          style={{
-            backgroundImage: `
-              repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.02) 3px, rgba(255,255,255,0.02) 4px)
-            `,
-          }}
-        />
+        {/* Seat overlay buttons */}
+        {allSeats.map(i => seatButton(i))}
       </div>
 
       {/* Legend */}
       <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-500">
         <span className="flex items-center gap-1.5">
-          <div className="w-3.5 h-3.5 rounded border-2 border-gray-300 bg-gray-100" />
+          <div className="w-3.5 h-3.5 rounded border border-gray-400 bg-gray-200/50" />
           {isUz ? "Bo'sh" : 'Свободно'}
         </span>
         <span className="flex items-center gap-1.5">
