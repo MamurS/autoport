@@ -151,7 +151,7 @@ export default function RideSearch() {
               ))}
             </div>
           ) : (
-            <RideMap rides={rides} />
+            <RideMap rides={rides} originCity={origin} />
           )
         ) : (
           <EmptyState
