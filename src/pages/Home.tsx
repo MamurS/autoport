@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button'
 import { Card, CardContent } from '../components/ui/Card'
 import { CityAutocomplete } from '../components/shared/CityAutocomplete'
 import { SearchHints } from '../components/shared/SearchHints'
+import { SeatPicker } from '../components/shared/SeatPicker'
 
 export default function Home() {
   const { t, i18n } = useTranslation()
@@ -15,6 +16,7 @@ export default function Home() {
   const [destination, setDestination] = useState('')
   const [date, setDate] = useState('')
   const [seats, setSeats] = useState('1')
+  const [selectedSeatPositions, setSelectedSeatPositions] = useState<number[]>([])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,7 +64,7 @@ export default function Home() {
                   <SearchHints origin={origin} destination={destination} />
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                   <div className="w-full">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       {t('home.departureDate')}
@@ -77,36 +79,41 @@ export default function Home() {
                       />
                     </div>
                   </div>
-                  <div className="w-full">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {i18n.language === 'uz' ? "O'rinlar soni" : 'Кол-во мест'}
-                    </label>
-                    <div className="flex items-center gap-1">
-                      {['1', '2', '3', '4'].map(n => (
-                        <button
-                          key={n}
-                          type="button"
-                          onClick={() => setSeats(n)}
-                          className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                            seats === n
-                              ? 'bg-blue-600 text-white border-blue-600'
-                              : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
-                          }`}
-                        >
-                          {n}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                   <Button type="submit" size="lg" className="w-full sm:w-auto">
                     <Search className="h-4 w-4 mr-2" />
                     {t('home.searchButton')}
+                    {selectedSeatPositions.length > 0 && (
+                      <span className="ml-1">
+                        ({selectedSeatPositions.length} {i18n.language === 'uz' ? "o'rin" : 'мест'})
+                      </span>
+                    )}
                   </Button>
                 </div>
               </form>
             </CardContent>
           </Card>
         </div>
+      </section>
+
+      {/* Seat picker section */}
+      <section className="max-w-4xl mx-auto px-4 py-10">
+        <h2 className="text-xl font-bold text-gray-900 mb-2 text-center">
+          {i18n.language === 'uz' ? "O'rningizni tanlang" : 'Выберите ваше место'}
+        </h2>
+        <p className="text-sm text-gray-500 mb-6 text-center">
+          {i18n.language === 'uz'
+            ? "Avtomobil ichida o'zingizga qulay joyni tanlang"
+            : 'Выберите удобное место в автомобиле'
+          }
+        </p>
+        <SeatPicker
+          totalSeats={4}
+          availableSeats={3}
+          bookedSeats={[1]}
+          maxSelect={3}
+          selectedSeats={selectedSeatPositions}
+          onSelect={setSelectedSeatPositions}
+        />
       </section>
     </div>
   )
