@@ -60,7 +60,19 @@ export function RideCard({ ride }: RideCardProps) {
               </span>
               <span className="flex items-center gap-1">
                 <Users className="h-3.5 w-3.5" />
-                {ride.available_seats} {t('common.seats')}
+                {ride.total_seats - ride.available_seats > 0 && (
+                  <span className="text-green-600">
+                    {i18n.language === 'uz'
+                      ? `${ride.total_seats - ride.available_seats} yo'lovchi`
+                      : `${ride.total_seats - ride.available_seats} пасс.`
+                    }
+                    {' · '}
+                  </span>
+                )}
+                {i18n.language === 'uz'
+                  ? `${ride.available_seats} o'rin qoldi`
+                  : `${ride.available_seats} мест`
+                }
               </span>
             </div>
             {ride.driver && (

@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import { Layout } from './components/layout/Layout'
+import Onboarding from './pages/Onboarding'
 
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -39,6 +41,17 @@ function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?
 }
 
 function App() {
+  const [onboarded, setOnboarded] = useState(() => localStorage.getItem('onboarded') === '1')
+
+  if (!onboarded) {
+    return (
+      <Onboarding onComplete={() => {
+        localStorage.setItem('onboarded', '1')
+        setOnboarded(true)
+      }} />
+    )
+  }
+
   return (
     <Layout>
       <Routes>

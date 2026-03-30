@@ -103,7 +103,20 @@ export default function RideDetail() {
               <Users className="h-4 w-4 text-gray-400" />
               <div>
                 <p className="text-xs text-gray-400">{t('rides.availableSeats')}</p>
-                <p className="font-medium">{ride.available_seats} / {ride.total_seats}</p>
+                <p className="font-medium">
+                  {ride.total_seats - ride.available_seats > 0 && (
+                    <span className="text-green-600">
+                      {i18n.language === 'uz'
+                        ? `${ride.total_seats - ride.available_seats} yo'lovchi · `
+                        : `${ride.total_seats - ride.available_seats} пасс. · `
+                      }
+                    </span>
+                  )}
+                  {i18n.language === 'uz'
+                    ? `${ride.available_seats} o'rin qoldi`
+                    : `Осталось ${ride.available_seats} мест`
+                  }
+                </p>
               </div>
             </div>
           </div>
