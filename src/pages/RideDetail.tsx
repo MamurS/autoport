@@ -12,6 +12,7 @@ import { Badge } from '../components/ui/Badge'
 import { StarRating } from '../components/ui/StarRating'
 import { Skeleton } from '../components/ui/Skeleton'
 import { ReviewCard } from '../components/shared/ReviewCard'
+import { SeatPicker } from '../components/shared/SeatPicker'
 import { formatUZS, formatDateTime, formatPhone } from '../lib/utils'
 
 const statusVariant = {
@@ -28,6 +29,7 @@ export default function RideDetail() {
   const { ride, loading } = useRide(id || '')
 
   const [booking, setBooking] = useState(false)
+  const [selectedSeats, setSelectedSeats] = useState<number[]>([])
 
   const handleBook = async () => {
     setBooking(true)
@@ -130,10 +132,41 @@ export default function RideDetail() {
             </div>
           )}
 
+          {/* Seat picker */}
           {canBook && (
-            <Button onClick={handleBook} loading={booking} size="lg" className="w-full mt-6">
-              {t('rides.book')}
-            </Button>
+            <div className="mt-6 space-y-4">
+              <h3 className="text-sm font-semibold text-gray-900 text-center">
+                {i18n.language === 'uz' ? "O'rin tanlang" : 'Выберите место'}
+              </h3>
+              <SeatPicker
+                totalSeats={ride.total_seats}
+                availableSeats={ride.available_seats}
+                bookedSeats={
+                  // Mark seats as booked based on how many are taken
+                  Array.from(
+                    { length: ride.total_seats - ride.available_seats },
+                    (_, i) => i + 1
+                  )
+                }
+                maxSelect={ride.available_seats}
+                selectedSeats={selectedSeats}
+                onSelect={setSelectedSeats}
+              />
+              <Button
+                onClick={handleBook}
+                loading={booking}
+                size="lg"
+                className="w-full"
+                disabled={selectedSeats.length === 0}
+              >
+                {selectedSeats.length > 0
+                  ? (i18n.language === 'uz'
+                    ? `${selectedSeats.length} o'rin bron qilish — ${formatUZS(ride.price_per_seat * selectedSeats.length)}`
+                    : `Забронировать ${selectedSeats.length} мест — ${formatUZS(ride.price_per_seat * selectedSeats.length)}`)
+                  : t('rides.book')
+                }
+              </Button>
+            </div>
           )}
         </CardContent>
       </Card>
