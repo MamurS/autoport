@@ -10,43 +10,77 @@ import type { Ride } from '../../types'
 
 import 'leaflet/dist/leaflet.css'
 
-// Custom price label marker
-function createPriceIcon(price: string, carModel: string) {
-  return L.divIcon({
-    className: 'custom-price-marker',
-    html: `
-      <div style="
-        background: white;
-        border: 2px solid #2563eb;
-        border-radius: 12px;
-        padding: 4px 10px;
-        font-size: 12px;
-        font-weight: 700;
-        color: #2563eb;
-        white-space: nowrap;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        line-height: 1.3;
-        cursor: pointer;
-      ">
-        <span>${price}</span>
-        <span style="font-size: 10px; font-weight: 400; color: #6b7280;">${carModel}</span>
+// Custom price label marker — bubble wraps all text
+function createPriceIcon(price: string, carModel: string, destination: string, time: string, seats: number) {
+  const html = `
+    <div class="ride-bubble">
+      <div class="ride-bubble-content">
+        <div class="ride-bubble-price">${price}</div>
+        <div class="ride-bubble-route">→ ${destination}</div>
+        <div class="ride-bubble-meta">${carModel} · ${seats} мест · ${time}</div>
       </div>
-      <div style="
-        width: 0;
-        height: 0;
-        border-left: 6px solid transparent;
-        border-right: 6px solid transparent;
-        border-top: 6px solid #2563eb;
-        margin: 0 auto;
-      "></div>
-    `,
-    iconSize: [0, 0],
-    iconAnchor: [50, 52],
-    popupAnchor: [0, -52],
+      <div class="ride-bubble-arrow"></div>
+    </div>
+  `
+  return L.divIcon({
+    className: '',
+    html,
+    iconSize: undefined as unknown as L.PointExpression,
+    iconAnchor: [80, 80],
+    popupAnchor: [0, -70],
   })
+}
+
+// Inject marker styles once
+const styleId = 'ride-map-styles'
+if (typeof document !== 'undefined' && !document.getElementById(styleId)) {
+  const style = document.createElement('style')
+  style.id = styleId
+  style.textContent = `
+    .ride-bubble {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.18));
+    }
+    .ride-bubble-content {
+      background: white;
+      border: 2px solid #2563eb;
+      border-radius: 14px;
+      padding: 6px 12px;
+      white-space: nowrap;
+      cursor: pointer;
+      text-align: center;
+      line-height: 1.35;
+    }
+    .ride-bubble-content:hover {
+      background: #eff6ff;
+      border-color: #1d4ed8;
+    }
+    .ride-bubble-price {
+      font-size: 14px;
+      font-weight: 700;
+      color: #2563eb;
+    }
+    .ride-bubble-route {
+      font-size: 12px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+    .ride-bubble-meta {
+      font-size: 10px;
+      font-weight: 400;
+      color: #6b7280;
+    }
+    .ride-bubble-arrow {
+      width: 0;
+      height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 7px solid #2563eb;
+    }
+  `
+  document.head.appendChild(style)
 }
 
 L.Marker.prototype.options.icon = L.icon({
@@ -147,12 +181,14 @@ export function RideMap({ rides, originCity }: RideMapProps) {
               const pos = getSpreadPosition(baseCoord, idx, group.length)
               const priceStr = formatUZS(ride.price_per_seat)
               const carStr = ride.driver?.car_model || '—'
+              const dep = new Date(ride.departure_at)
+              const timeStr = dep.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
 
               return (
                 <Marker
                   key={ride.id}
                   position={pos}
-                  icon={createPriceIcon(priceStr, carStr)}
+                  icon={createPriceIcon(priceStr, carStr, ride.destination, timeStr, ride.available_seats)}
                   eventHandlers={{
                     click: () => setSelectedRide(ride.id),
                   }}
