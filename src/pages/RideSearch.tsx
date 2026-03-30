@@ -10,6 +10,7 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { RideCardSkeleton } from '../components/ui/Skeleton'
 import { RideCard } from '../components/shared/RideCard'
 import { RideMap } from '../components/shared/RideMap'
+import { AlternativeSuggestions } from '../components/shared/AlternativeSuggestions'
 
 export default function RideSearch() {
   const { t } = useTranslation()
@@ -134,6 +135,16 @@ export default function RideSearch() {
               className="w-32"
             />
           </div>
+        )}
+
+        {/* Alternative suggestions */}
+        {!loading && (
+          <AlternativeSuggestions
+            origin={origin}
+            destination={destination}
+            date={date}
+            currentResultsCount={rides.length}
+          />
         )}
 
         {/* Results */}

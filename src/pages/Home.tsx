@@ -8,6 +8,7 @@ import { Card, CardContent } from '../components/ui/Card'
 import { EmptyState } from '../components/ui/EmptyState'
 import { RideCardSkeleton } from '../components/ui/Skeleton'
 import { CityAutocomplete } from '../components/shared/CityAutocomplete'
+import { SearchHints } from '../components/shared/SearchHints'
 import { RideCard } from '../components/shared/RideCard'
 
 export default function Home() {
@@ -60,6 +61,11 @@ export default function Home() {
                     placeholder={t('home.destinationPlaceholder')}
                   />
                 </div>
+
+                {/* Search hints */}
+                {(origin || destination) && (
+                  <SearchHints origin={origin} destination={destination} />
+                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                   <div className="w-full">

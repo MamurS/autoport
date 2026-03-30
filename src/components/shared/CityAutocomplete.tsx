@@ -73,7 +73,7 @@ export function CityAutocomplete({ label, value, onChange, placeholder }: CityAu
         />
       </div>
       {isOpen && filtered.length > 0 && (
-        <ul className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+        <ul className="absolute left-0 z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto text-left">
           {filtered.map(city => (
             <li
               key={city.id}
@@ -83,13 +83,15 @@ export function CityAutocomplete({ label, value, onChange, placeholder }: CityAu
                 onChange(name)
                 setIsOpen(false)
               }}
-              className="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer flex items-center gap-2"
+              className="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer flex items-start gap-2"
             >
-              <MapPin className="h-3 w-3 text-gray-400 flex-shrink-0" />
-              <span>{city[nameField]}</span>
-              {city[regionField] && (
-                <span className="text-gray-400 text-xs">({city[regionField]})</span>
-              )}
+              <MapPin className="h-3 w-3 text-gray-400 flex-shrink-0 mt-0.5" />
+              <span>
+                <span className="text-gray-900">{city[nameField]}</span>
+                {city[regionField] && (
+                  <span className="text-gray-400 text-xs ml-1">({city[regionField]})</span>
+                )}
+              </span>
             </li>
           ))}
         </ul>

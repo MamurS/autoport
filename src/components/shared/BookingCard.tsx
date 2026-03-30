@@ -1,12 +1,14 @@
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '../ui/Card'
 import { Badge } from '../ui/Badge'
+import { BookingTimer } from './BookingTimer'
 import { formatUZS, formatDateTime } from '../../lib/utils'
 import type { Booking } from '../../types'
 
 interface BookingCardProps {
   booking: Booking
   actions?: React.ReactNode
+  onTimerExpired?: () => void
 }
 
 const statusVariant = {
@@ -16,7 +18,7 @@ const statusVariant = {
   cancelled: 'default' as const,
 }
 
-export function BookingCard({ booking, actions }: BookingCardProps) {
+export function BookingCard({ booking, actions, onTimerExpired }: BookingCardProps) {
   const { t, i18n } = useTranslation()
 
   return (
@@ -48,6 +50,16 @@ export function BookingCard({ booking, actions }: BookingCardProps) {
           <p className="text-xs text-gray-500 mb-2">
             {booking.passenger.full_name} — {booking.passenger.phone}
           </p>
+        )}
+
+        {booking.status === 'pending' && (
+          <div className="mb-2">
+            <BookingTimer
+              createdAt={booking.created_at}
+              timeoutMinutes={30}
+              onExpired={onTimerExpired}
+            />
+          </div>
         )}
 
         {booking.commission_amount != null && booking.commission_amount > 0 && (
