@@ -2,12 +2,12 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
-import { Menu, X, Car, Globe } from 'lucide-react'
+import { Menu, X, Car, Globe, UserCog } from 'lucide-react'
 import { Button } from '../ui/Button'
 
 export function Header() {
   const { t, i18n } = useTranslation()
-  const { profile, signOut } = useAuth()
+  const { profile, signOut, setDemoRole } = useAuth() as ReturnType<typeof useAuth> & { setDemoRole: (role: string) => void }
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -51,6 +51,20 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-2">
+            {/* Demo role switcher */}
+            {profile && setDemoRole && (
+              <select
+                value={profile.role}
+                onChange={e => setDemoRole(e.target.value as 'passenger' | 'driver' | 'admin')}
+                className="text-xs border border-gray-300 rounded px-1.5 py-1 text-gray-600 bg-yellow-50"
+                title="Demo: switch role"
+              >
+                <option value="passenger">Passenger</option>
+                <option value="driver">Driver</option>
+                <option value="admin">Admin</option>
+              </select>
+            )}
+
             <button
               onClick={toggleLanguage}
               className="flex items-center gap-1 px-2 py-1 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100"
