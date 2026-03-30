@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, SlidersHorizontal } from 'lucide-react'
+import { ArrowLeft, SlidersHorizontal, List, Map } from 'lucide-react'
 import { useRides } from '../hooks/useRides'
 import { Button } from '../components/ui/Button'
 import { Select } from '../components/ui/Select'
@@ -9,6 +9,7 @@ import { Input } from '../components/ui/Input'
 import { EmptyState } from '../components/ui/EmptyState'
 import { RideCardSkeleton } from '../components/ui/Skeleton'
 import { RideCard } from '../components/shared/RideCard'
+import { RideMap } from '../components/shared/RideMap'
 
 export default function RideSearch() {
   const { t } = useTranslation()
@@ -23,6 +24,7 @@ export default function RideSearch() {
   const [priceMin, setPriceMin] = useState('')
   const [priceMax, setPriceMax] = useState('')
   const [showFilters, setShowFilters] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
 
   const filters = useMemo(() => ({
     origin,
@@ -49,7 +51,7 @@ export default function RideSearch() {
           <Link to="/" className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <div>
+          <div className="flex-1">
             <h1 className="text-xl font-bold text-gray-900">{t('rides.title')}</h1>
             {(origin || destination) && (
               <p className="text-sm text-gray-500">
@@ -85,6 +87,32 @@ export default function RideSearch() {
             <SlidersHorizontal className="h-4 w-4 mr-1" />
             {t('rides.filterByPrice')}
           </Button>
+
+          {/* View mode toggle */}
+          <div className="ml-auto flex items-center bg-gray-100 rounded-lg p-0.5">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <List className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('rides.listView', 'Список')}</span>
+            </button>
+            <button
+              onClick={() => setViewMode('map')}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                viewMode === 'map'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Map className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('rides.mapView', 'Карта')}</span>
+            </button>
+          </div>
         </div>
 
         {showFilters && (
@@ -116,11 +144,15 @@ export default function RideSearch() {
             ))}
           </div>
         ) : rides.length > 0 ? (
-          <div className="space-y-4">
-            {rides.map(ride => (
-              <RideCard key={ride.id} ride={ride} />
-            ))}
-          </div>
+          viewMode === 'list' ? (
+            <div className="space-y-4">
+              {rides.map(ride => (
+                <RideCard key={ride.id} ride={ride} />
+              ))}
+            </div>
+          ) : (
+            <RideMap rides={rides} />
+          )
         ) : (
           <EmptyState
             title={t('rides.noRidesFound')}
