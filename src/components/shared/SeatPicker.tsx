@@ -40,13 +40,13 @@ export function SeatPicker({
   const backRow: number[] = []
   for (let i = 2; i < totalSeats + 1; i++) backRow.push(i)
 
-  // Seat overlay positions (% based, matching the light SVG layout)
+  // Seat overlay positions (% based, for real photo background)
   const seatPositions: Record<number, { top: string; left: string; width: string; height: string }> = {
-    0: { top: '28%', left: '13%', width: '27%', height: '17%' },   // driver
-    1: { top: '28%', left: '60%', width: '27%', height: '17%' },   // front passenger
-    2: { top: '69%', left: '10%', width: '24%', height: '14%' },   // back left
-    3: { top: '69%', left: '38%', width: '24%', height: '14%' },   // back center
-    4: { top: '69%', left: '65%', width: '24%', height: '14%' },   // back right
+    0: { top: '18%', left: '5%',  width: '40%', height: '22%' },   // driver
+    1: { top: '18%', left: '55%', width: '40%', height: '22%' },   // front passenger
+    2: { top: '60%', left: '3%',  width: '30%', height: '18%' },   // back left
+    3: { top: '60%', left: '35%', width: '30%', height: '18%' },   // back center
+    4: { top: '60%', left: '67%', width: '30%', height: '18%' },   // back right
   }
 
   const seatButton = (index: number) => {
@@ -56,10 +56,10 @@ export function SeatPicker({
     if (!pos) return null
 
     const overlayStyles: Record<string, string> = {
-      driver: 'bg-gray-800/30 border-gray-600/40',
-      booked: 'bg-red-500/40 border-red-500/60 shadow-[0_0_12px_rgba(239,68,68,0.25)]',
-      available: 'bg-transparent border-2 border-dashed border-gray-500/40 hover:bg-blue-500/20 hover:border-blue-500/60 hover:shadow-[0_0_16px_rgba(59,130,246,0.2)]',
-      selected: 'bg-blue-500/40 border-blue-500/70 shadow-[0_0_16px_rgba(59,130,246,0.35)]',
+      driver: 'bg-black/50 border-white/20 backdrop-blur-[2px]',
+      booked: 'bg-red-600/50 border-red-300/70 backdrop-blur-[2px] shadow-[0_0_12px_rgba(239,68,68,0.3)]',
+      available: 'bg-white/15 border-2 border-dashed border-white/50 backdrop-blur-[1px] hover:bg-green-500/30 hover:border-green-300/70 hover:shadow-[0_0_20px_rgba(74,222,128,0.3)]',
+      selected: 'bg-blue-600/50 border-blue-300/80 backdrop-blur-[2px] shadow-[0_0_18px_rgba(59,130,246,0.4)]',
     }
 
     const label = status === 'driver'
@@ -96,16 +96,12 @@ export function SeatPicker({
         }}
       >
         {label && (
-          <span className={`text-xs sm:text-sm font-bold leading-none drop-shadow ${
-            status === 'selected' ? 'text-blue-800' : status === 'booked' ? 'text-red-700' : 'text-gray-700'
-          }`}>
+          <span className="text-white text-xs sm:text-sm font-bold leading-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
             {label}
           </span>
         )}
         {sublabel && (
-          <span className={`text-[9px] sm:text-[10px] font-medium leading-none mt-0.5 ${
-            status === 'selected' ? 'text-blue-700' : 'text-gray-500'
-          }`}>
+          <span className="text-white/80 text-[9px] sm:text-[10px] font-medium leading-none mt-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
             {sublabel}
           </span>
         )}
@@ -117,18 +113,19 @@ export function SeatPicker({
 
   return (
     <div className="space-y-3">
-      {/* Car interior with overlaid seat buttons */}
+      {/* Car interior with real photo background */}
       <div
-        className="relative mx-auto rounded-[2rem] overflow-hidden"
-        style={{ maxWidth: '320px', aspectRatio: '4 / 5' }}
+        className="relative mx-auto rounded-2xl overflow-hidden shadow-lg"
+        style={{
+          maxWidth: '360px',
+          aspectRatio: '3 / 4',
+          backgroundImage: 'url(https://images.unsplash.com/photo-1583267746897-2cf415887172?w=600&q=80)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
       >
-        {/* Car interior SVG background */}
-        <img
-          src="/car-interior.svg"
-          alt="Car interior"
-          className="w-full h-full object-cover"
-          draggable={false}
-        />
+        {/* Dark overlay for contrast */}
+        <div className="absolute inset-0 bg-black/25" />
 
         {/* Seat overlay buttons */}
         {allSeats.map(i => seatButton(i))}
