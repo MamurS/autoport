@@ -1,15 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Search, MapPin, Calendar } from 'lucide-react'
-import { useRides } from '../hooks/useRides'
+import { Search, Calendar } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent } from '../components/ui/Card'
-import { EmptyState } from '../components/ui/EmptyState'
-import { RideCardSkeleton } from '../components/ui/Skeleton'
 import { CityAutocomplete } from '../components/shared/CityAutocomplete'
 import { SearchHints } from '../components/shared/SearchHints'
-import { RideCard } from '../components/shared/RideCard'
 
 export default function Home() {
   const { t, i18n } = useTranslation()
@@ -19,9 +15,6 @@ export default function Home() {
   const [destination, setDestination] = useState('')
   const [date, setDate] = useState('')
   const [seats, setSeats] = useState('1')
-
-  const { rides, loading } = useRides()
-  const recentRides = rides.slice(0, 6)
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -114,31 +107,6 @@ export default function Home() {
             </CardContent>
           </Card>
         </div>
-      </section>
-
-      {/* Recent Rides */}
-      <section className="max-w-4xl mx-auto px-4 py-10">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">
-          {t('home.recentRides')}
-        </h2>
-
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }, (_, i) => (
-              <RideCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : recentRides.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recentRides.map(ride => (
-              <RideCard key={ride.id} ride={ride} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            title={t('home.noRides')}
-          />
-        )}
       </section>
     </div>
   )
