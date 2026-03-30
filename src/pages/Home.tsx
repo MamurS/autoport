@@ -12,12 +12,13 @@ import { SearchHints } from '../components/shared/SearchHints'
 import { RideCard } from '../components/shared/RideCard'
 
 export default function Home() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
 
   const [origin, setOrigin] = useState('')
   const [destination, setDestination] = useState('')
   const [date, setDate] = useState('')
+  const [seats, setSeats] = useState('1')
 
   const { rides, loading } = useRides()
   const recentRides = rides.slice(0, 6)
@@ -28,6 +29,7 @@ export default function Home() {
     if (origin) params.set('origin', origin)
     if (destination) params.set('destination', destination)
     if (date) params.set('date', date)
+    if (seats && seats !== '1') params.set('seats', seats)
     navigate(`/rides?${params.toString()}`)
   }
 
@@ -67,7 +69,7 @@ export default function Home() {
                   <SearchHints origin={origin} destination={destination} />
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                   <div className="w-full">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       {t('home.departureDate')}
@@ -80,6 +82,27 @@ export default function Home() {
                         onChange={e => setDate(e.target.value)}
                         className="block w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                       />
+                    </div>
+                  </div>
+                  <div className="w-full">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {i18n.language === 'uz' ? "O'rinlar soni" : 'Кол-во мест'}
+                    </label>
+                    <div className="flex items-center gap-1">
+                      {['1', '2', '3', '4'].map(n => (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => setSeats(n)}
+                          className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                            seats === n
+                              ? 'bg-blue-600 text-white border-blue-600'
+                              : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
+                          }`}
+                        >
+                          {n}
+                        </button>
+                      ))}
                     </div>
                   </div>
                   <Button type="submit" size="lg" className="w-full sm:w-auto">
