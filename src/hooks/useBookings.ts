@@ -1,32 +1,21 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { demoBookings } from '../lib/demoData'
 import type { Booking } from '../types/index'
 
 export function useMyBookings() {
   const { user } = useAuth()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error] = useState<string | null>(null)
 
   const fetchMyBookings = useCallback(async () => {
     if (!user) return
-
     setLoading(true)
-    setError(null)
-
-    const { data, error: fetchError } = await supabase
-      .from('bookings')
-      .select('*, ride:rides(*, driver:profiles(*)), passenger:profiles(*)')
-      .eq('passenger_id', user.id)
-      .order('created_at', { ascending: false })
-
-    if (fetchError) {
-      setError(fetchError.message)
-    } else {
-      setBookings(data as Booking[])
-    }
-    setLoading(false)
+    setTimeout(() => {
+      setBookings(demoBookings)
+      setLoading(false)
+    }, 200)
   }, [user])
 
   useEffect(() => {
@@ -39,26 +28,15 @@ export function useMyBookings() {
 export function useRideBookings(rideId: string) {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error] = useState<string | null>(null)
 
   const fetchRideBookings = useCallback(async () => {
     if (!rideId) return
-
     setLoading(true)
-    setError(null)
-
-    const { data, error: fetchError } = await supabase
-      .from('bookings')
-      .select('*, passenger:profiles(*), ride:rides(*)')
-      .eq('ride_id', rideId)
-      .order('created_at', { ascending: false })
-
-    if (fetchError) {
-      setError(fetchError.message)
-    } else {
-      setBookings(data as Booking[])
-    }
-    setLoading(false)
+    setTimeout(() => {
+      setBookings(demoBookings.filter(b => b.ride_id === rideId))
+      setLoading(false)
+    }, 200)
   }, [rideId])
 
   useEffect(() => {
@@ -68,56 +46,18 @@ export function useRideBookings(rideId: string) {
   return { bookings, loading, error, refetch: fetchRideBookings }
 }
 
-export async function createBooking(
-  rideId: string
-): Promise<{ error: string | null }> {
-  const { error } = await supabase
-    .from('bookings')
-    .insert({ ride_id: rideId })
-
-  if (error) {
-    return { error: error.message }
-  }
+export async function createBooking(_rideId: string): Promise<{ error: string | null }> {
   return { error: null }
 }
 
-export async function confirmBooking(
-  bookingId: string
-): Promise<{ error: string | null }> {
-  const { error } = await supabase.rpc('confirm_booking', {
-    booking_id: bookingId,
-  })
-
-  if (error) {
-    return { error: error.message }
-  }
+export async function confirmBooking(_bookingId: string): Promise<{ error: string | null }> {
   return { error: null }
 }
 
-export async function rejectBooking(
-  bookingId: string
-): Promise<{ error: string | null }> {
-  const { error } = await supabase
-    .from('bookings')
-    .update({ status: 'rejected', updated_at: new Date().toISOString() })
-    .eq('id', bookingId)
-
-  if (error) {
-    return { error: error.message }
-  }
+export async function rejectBooking(_bookingId: string): Promise<{ error: string | null }> {
   return { error: null }
 }
 
-export async function cancelBooking(
-  bookingId: string
-): Promise<{ error: string | null }> {
-  const { error } = await supabase
-    .from('bookings')
-    .update({ status: 'cancelled', updated_at: new Date().toISOString() })
-    .eq('id', bookingId)
-
-  if (error) {
-    return { error: error.message }
-  }
+export async function cancelBooking(_bookingId: string): Promise<{ error: string | null }> {
   return { error: null }
 }

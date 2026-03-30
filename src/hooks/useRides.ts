@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { demoRides } from '../lib/demoData'
 import type { Ride } from '../types/index'
 
 interface RideFilters {
@@ -16,47 +16,37 @@ interface RideFilters {
 export function useRides(filters?: RideFilters) {
   const [rides, setRides] = useState<Ride[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error] = useState<string | null>(null)
 
   const fetchRides = useCallback(async () => {
     setLoading(true)
-    setError(null)
-
-    let query = supabase
-      .from('rides')
-      .select('*, driver:profiles(*)')
-      .eq('status', 'active')
+    let result = [...demoRides].filter(r => r.status === 'active')
 
     if (filters?.origin) {
-      query = query.eq('origin', filters.origin)
+      result = result.filter(r => r.origin.toLowerCase().includes(filters.origin!.toLowerCase()))
     }
     if (filters?.destination) {
-      query = query.eq('destination', filters.destination)
-    }
-    if (filters?.date) {
-      query = query
-        .gte('departure_at', `${filters.date}T00:00:00`)
-        .lte('departure_at', `${filters.date}T23:59:59`)
+      result = result.filter(r => r.destination.toLowerCase().includes(filters.destination!.toLowerCase()))
     }
     if (filters?.priceMin !== undefined) {
-      query = query.gte('price_per_seat', filters.priceMin)
+      result = result.filter(r => r.price_per_seat >= filters.priceMin!)
     }
     if (filters?.priceMax !== undefined) {
-      query = query.lte('price_per_seat', filters.priceMax)
+      result = result.filter(r => r.price_per_seat <= filters.priceMax!)
     }
 
     const sortField = filters?.sort || 'departure_at'
-    const sortDirection = filters?.sortDirection === 'desc'
-    query = query.order(sortField, { ascending: !sortDirection })
+    const desc = filters?.sortDirection === 'desc'
+    result.sort((a, b) => {
+      const av = sortField === 'price_per_seat' ? a.price_per_seat : new Date(a.departure_at).getTime()
+      const bv = sortField === 'price_per_seat' ? b.price_per_seat : new Date(b.departure_at).getTime()
+      return desc ? bv - av : av - bv
+    })
 
-    const { data, error: fetchError } = await query
-
-    if (fetchError) {
-      setError(fetchError.message)
-    } else {
-      setRides(data as Ride[])
-    }
-    setLoading(false)
+    setTimeout(() => {
+      setRides(result)
+      setLoading(false)
+    }, 300)
   }, [filters?.origin, filters?.destination, filters?.date, filters?.sort, filters?.sortDirection, filters?.priceMin, filters?.priceMax])
 
   useEffect(() => {
@@ -69,30 +59,15 @@ export function useRides(filters?: RideFilters) {
 export function useRide(id: string) {
   const [ride, setRide] = useState<Ride | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id) return
-
-    const fetchRide = async () => {
-      setLoading(true)
-      setError(null)
-
-      const { data, error: fetchError } = await supabase
-        .from('rides')
-        .select('*, driver:profiles(*)')
-        .eq('id', id)
-        .single()
-
-      if (fetchError) {
-        setError(fetchError.message)
-      } else {
-        setRide(data as Ride)
-      }
+    setLoading(true)
+    setTimeout(() => {
+      setRide(demoRides.find(r => r.id === id) || null)
       setLoading(false)
-    }
-
-    fetchRide()
+    }, 200)
   }, [id])
 
   return { ride, loading, error }
@@ -102,26 +77,15 @@ export function useMyRides() {
   const { user } = useAuth()
   const [rides, setRides] = useState<Ride[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error] = useState<string | null>(null)
 
   const fetchMyRides = useCallback(async () => {
     if (!user) return
-
     setLoading(true)
-    setError(null)
-
-    const { data, error: fetchError } = await supabase
-      .from('rides')
-      .select('*, driver:profiles(*)')
-      .eq('driver_id', user.id)
-      .order('departure_at', { ascending: false })
-
-    if (fetchError) {
-      setError(fetchError.message)
-    } else {
-      setRides(data as Ride[])
-    }
-    setLoading(false)
+    setTimeout(() => {
+      setRides(demoRides.filter(r => r.driver_id === user.id))
+      setLoading(false)
+    }, 200)
   }, [user])
 
   useEffect(() => {
@@ -131,7 +95,7 @@ export function useMyRides() {
   return { rides, loading, error, refetch: fetchMyRides }
 }
 
-export async function createRide(data: {
+export async function createRide(_data: {
   origin: string
   destination: string
   intermediate_stops?: string[]
@@ -141,25 +105,12 @@ export async function createRide(data: {
   available_seats: number
   notes?: string
 }): Promise<{ error: string | null }> {
-  const { error } = await supabase.from('rides').insert(data)
-
-  if (error) {
-    return { error: error.message }
-  }
   return { error: null }
 }
 
 export async function updateRideStatus(
-  id: string,
-  status: Ride['status']
+  _id: string,
+  _status: Ride['status']
 ): Promise<{ error: string | null }> {
-  const { error } = await supabase
-    .from('rides')
-    .update({ status })
-    .eq('id', id)
-
-  if (error) {
-    return { error: error.message }
-  }
   return { error: null }
 }

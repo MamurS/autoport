@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { supabase } from '../../lib/supabase'
+import { demoCities } from '../../lib/demoData'
 import type { City } from '../../types'
 import { MapPin } from 'lucide-react'
 
@@ -20,9 +20,7 @@ export function CityAutocomplete({ label, value, onChange, placeholder }: CityAu
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    supabase.from('cities').select('*').order('name_ru').then(({ data }) => {
-      if (data) setCities(data)
-    })
+    setCities(demoCities)
   }, [])
 
   useEffect(() => {
