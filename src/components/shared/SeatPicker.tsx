@@ -40,13 +40,13 @@ export function SeatPicker({
   const backRow: number[] = []
   for (let i = 2; i < totalSeats + 1; i++) backRow.push(i)
 
-  // Seat overlay positions (% based, matching the SVG layout)
+  // Seat overlay positions (% based, matching the light SVG layout)
   const seatPositions: Record<number, { top: string; left: string; width: string; height: string }> = {
-    0: { top: '28%', left: '11%', width: '28%', height: '18%' },   // driver
-    1: { top: '28%', left: '61%', width: '28%', height: '18%' },   // front passenger
-    2: { top: '68%', left: '8%',  width: '26%', height: '16%' },   // back left
-    3: { top: '68%', left: '37%', width: '26%', height: '16%' },   // back center
-    4: { top: '68%', left: '66%', width: '26%', height: '16%' },   // back right
+    0: { top: '28%', left: '13%', width: '27%', height: '17%' },   // driver
+    1: { top: '28%', left: '60%', width: '27%', height: '17%' },   // front passenger
+    2: { top: '69%', left: '10%', width: '24%', height: '14%' },   // back left
+    3: { top: '69%', left: '38%', width: '24%', height: '14%' },   // back center
+    4: { top: '69%', left: '65%', width: '24%', height: '14%' },   // back right
   }
 
   const seatButton = (index: number) => {
@@ -56,10 +56,10 @@ export function SeatPicker({
     if (!pos) return null
 
     const overlayStyles: Record<string, string> = {
-      driver: 'bg-black/40 border-white/10',
-      booked: 'bg-red-500/50 border-red-400/60 shadow-[0_0_15px_rgba(239,68,68,0.3)]',
-      available: 'bg-white/10 border-white/30 hover:bg-green-400/30 hover:border-green-300/60 hover:shadow-[0_0_20px_rgba(74,222,128,0.3)]',
-      selected: 'bg-blue-500/50 border-blue-300/70 shadow-[0_0_20px_rgba(59,130,246,0.4)]',
+      driver: 'bg-gray-800/30 border-gray-600/40',
+      booked: 'bg-red-500/40 border-red-500/60 shadow-[0_0_12px_rgba(239,68,68,0.25)]',
+      available: 'bg-transparent border-2 border-dashed border-gray-500/40 hover:bg-blue-500/20 hover:border-blue-500/60 hover:shadow-[0_0_16px_rgba(59,130,246,0.2)]',
+      selected: 'bg-blue-500/40 border-blue-500/70 shadow-[0_0_16px_rgba(59,130,246,0.35)]',
     }
 
     const label = status === 'driver'
@@ -96,12 +96,16 @@ export function SeatPicker({
         }}
       >
         {label && (
-          <span className="text-white text-xs sm:text-sm font-bold drop-shadow-lg leading-none">
+          <span className={`text-xs sm:text-sm font-bold leading-none drop-shadow ${
+            status === 'selected' ? 'text-blue-800' : status === 'booked' ? 'text-red-700' : 'text-gray-700'
+          }`}>
             {label}
           </span>
         )}
         {sublabel && (
-          <span className="text-white/80 text-[9px] sm:text-[10px] font-medium drop-shadow leading-none mt-0.5">
+          <span className={`text-[9px] sm:text-[10px] font-medium leading-none mt-0.5 ${
+            status === 'selected' ? 'text-blue-700' : 'text-gray-500'
+          }`}>
             {sublabel}
           </span>
         )}
